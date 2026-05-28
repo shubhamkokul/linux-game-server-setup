@@ -173,6 +173,10 @@ sudo vi /usr/local/bin/start-satisfactory
 
 ```bash
 #!/bin/bash
+if sudo systemctl is-active --quiet satisfactory; then
+  echo "Satisfactory server is already running."
+  exit 0
+fi
 sudo systemctl start satisfactory
 echo "Satisfactory server starting..."
 sudo systemctl status satisfactory --no-pager
@@ -184,6 +188,10 @@ sudo vi /usr/local/bin/stop-satisfactory
 
 ```bash
 #!/bin/bash
+if ! sudo systemctl is-active --quiet satisfactory; then
+  echo "Satisfactory server is not running."
+  exit 0
+fi
 sudo systemctl stop satisfactory
 echo "Satisfactory server stopped."
 ```
