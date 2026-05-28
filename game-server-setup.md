@@ -26,7 +26,44 @@ The server simulates the world — physics, player positions, saves. Each client
 
 ## Phase 2 — Docker Base Stack
 
-> Coming soon
+### Why Docker for game servers?
+
+Each game server runs in an isolated container — start, stop, and update independently without touching anything else on the server. Adding a new game is one `docker run` command. Cleanup is clean — `docker rm` and it's gone.
+
+### Install Docker Engine
+
+```bash
+# Remove any old versions
+sudo apt remove -y docker.io docker-doc docker-compose podman-docker containerd runc
+
+# Add Docker's official GPG key
+sudo apt install -y ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+# Add Docker repo
+# Note: use 'noble' (24.04 codename) — Docker repo may not have 26.04 entry yet
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu noble stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+```
+
+### Add your user to the docker group
+
+```bash
+sudo usermod -aG docker <username>
+# log out and back in for group change to take effect
+```
+
+### Verify
+
+```bash
+docker run hello-world
+docker --version
+docker compose version
+```
 
 ---
 
