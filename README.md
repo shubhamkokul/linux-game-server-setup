@@ -19,8 +19,8 @@ Multi-purpose VPS setup from scratch: SSH hardening, Docker, game servers (Satis
 
 ```mermaid
 graph LR
-    A[Local Machine<br/>Fedora] -->|SSH key auth<br/>port 8989| B[UFW Firewall]
-    B -->|port 8989 allowed| C[SSH Daemon<br/>port 8989]
+    A[Local Machine<br/>Fedora] -->|SSH key auth<br/><your-port>| B[UFW Firewall]
+    B -->|<your-port> allowed| C[SSH Daemon<br/><your-port>]
     C --> D[castiel user<br/>sudo]
     E[fail2ban] -->|watches| C
     E -->|bans IPs| B
@@ -56,7 +56,7 @@ sequenceDiagram
     A->>F: Connect to port 22
     F-->>A: Blocked (port not open)
 
-    A->>F: Connect to port 8989
+    A->>F: Connect to <your-port>
     F->>S: Forward connection
     A->>S: Try password login
     S-->>A: Rejected (password auth disabled)
@@ -221,7 +221,7 @@ sudo fail2ban-client status
 
 ### Step 10 — SSH config alias on local machine
 
-**Why:** Typing `ssh -p 8989 castiel@208.x.x.x` every time is friction. An SSH config entry lets you use a short hostname, and a shell alias makes it a single memorable command.
+**Why:** Typing `ssh -p <your-port> castiel@<your-server-ip>` every time is friction. An SSH config entry lets you use a short hostname, and a shell alias makes it a single memorable command.
 
 Add to `~/.ssh/config` on your local machine:
 
