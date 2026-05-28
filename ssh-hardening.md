@@ -216,7 +216,11 @@ Host ssdnode
     User <username>
     Port <your-port>
     IdentityFile ~/.ssh/id_ed25519
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
 ```
+
+`ServerAliveInterval 60` sends a keepalive ping every 60 seconds. `ServerAliveCountMax 3` disconnects cleanly after 3 missed pings instead of hanging. Without this, idle SSH sessions drop with `Broken pipe` errors — the server is fine but your terminal freezes.
 
 Add alias to `~/.zshrc`:
 
