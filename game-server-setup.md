@@ -163,6 +163,50 @@ sudo systemctl restart satisfactory    # restart
 sudo journalctl -fu satisfactory       # live logs
 ```
 
+### Convenience scripts
+
+Typing `sudo systemctl` every time gets old. Create wrapper scripts so any admin user can start/stop with a single command.
+
+```bash
+sudo vi /usr/local/bin/start-satisfactory
+```
+
+```bash
+#!/bin/bash
+sudo systemctl start satisfactory
+echo "Satisfactory server starting..."
+sudo systemctl status satisfactory --no-pager
+```
+
+```bash
+sudo vi /usr/local/bin/stop-satisfactory
+```
+
+```bash
+#!/bin/bash
+sudo systemctl stop satisfactory
+echo "Satisfactory server stopped."
+```
+
+```bash
+sudo chmod +x /usr/local/bin/start-satisfactory
+sudo chmod +x /usr/local/bin/stop-satisfactory
+```
+
+Allow your admin user to run them without a password prompt:
+
+```bash
+sudo visudo
+```
+
+Add at the bottom:
+
+```
+<username> ALL=(ALL) NOPASSWD: /bin/systemctl start satisfactory, /bin/systemctl stop satisfactory, /bin/systemctl status satisfactory
+```
+
+Now `start-satisfactory` and `stop-satisfactory` work from anywhere.
+
 ### Connect from the game
 
 1. Open Satisfactory → **Play → Server Manager → Add Server**
