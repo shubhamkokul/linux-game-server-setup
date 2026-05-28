@@ -25,7 +25,7 @@ graph LR
 | Guide | What it covers | Status |
 |---|---|---|
 | [SSH Hardening](ssh-hardening.md) | Non-root user, key auth, UFW, fail2ban, port rotation | ✅ Complete |
-| [Game Server Setup](game-server-setup.md) | Docker, SteamCMD, Satisfactory, systemd service | 🔧 In progress |
+| [Game Server Setup](game-server-setup.md) | Docker, SteamCMD, Satisfactory, systemd service, rsync backups | ✅ Complete |
 
 ---
 
