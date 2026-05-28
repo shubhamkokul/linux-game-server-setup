@@ -69,7 +69,107 @@ docker compose version
 
 ## Phase 3 — Satisfactory Dedicated Server
 
-> Coming soon: SteamCMD install, App ID 1690800, systemd service, port configuration
+### Why a dedicated `satisfactory` user?
+
+Same reason we don't use root — if the game server process gets exploited, the attacker only has access to that user's home directory, not the whole system.
+
+### Install SteamCMD
+
+```bash
+sudo apt install -y software-properties-common
+sudo add-apt-repository multiverse
+sudo dpkg --add-architecture i386
+sudo apt update
+sudo apt install -y steamcmd lib32gcc-s1
+```
+
+### Create a dedicated user
+
+```bash
+sudo useradd -m -s /bin/bash satisfactory
+sudo su - satisfactory
+```
+
+### Download the Satisfactory dedicated server
+
+App ID `1690800` is the dedicated server — free, no game ownership required.
+
+```bash
+# Stable branch
+/usr/games/steamcmd +force_install_dir /home/satisfactory/server +login anonymous +app_update 1690800 validate +quit
+
+# Experimental branch (latest features, more bugs)
+/usr/games/steamcmd +force_install_dir /home/satisfactory/server +login anonymous +app_update 1690800 -beta experimental validate +quit
+```
+
+To switch branches later, just re-run with the other command — same directory, files get overwritten.
+
+### Test run
+
+```bash
+/home/satisfactory/server/FactoryServer.sh -multihome=0.0.0.0
+```
+
+Watch for:
+```
+LogServer: Display: Server API listening on 0.0.0.0:7777
+LogNet: IpNetDriver listening on port 7777
+```
+
+`Ctrl+C` to stop once confirmed working.
+
+### Open firewall ports
+
+> Note: Satisfactory 1.0+ uses ports 7777 and 8888. The older ports 15000/15777 are no longer needed.
+
+```bash
+sudo ufw allow 7777/udp
+sudo ufw allow 7777/tcp
+sudo ufw allow 8888/tcp
+```
+
+### systemd service
+
+Create `/etc/systemd/system/satisfactory.service`:
+
+```ini
+[Unit]
+Description=Satisfactory Dedicated Server
+After=network.target
+
+[Service]
+User=satisfactory
+WorkingDirectory=/home/satisfactory/server
+ExecStart=/home/satisfactory/server/FactoryServer.sh -multihome=0.0.0.0
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now satisfactory
+sudo systemctl status satisfactory
+```
+
+### Useful commands
+
+```bash
+sudo systemctl start satisfactory      # start
+sudo systemctl stop satisfactory       # stop
+sudo systemctl restart satisfactory    # restart
+sudo journalctl -fu satisfactory       # live logs
+```
+
+### Connect from the game
+
+1. Open Satisfactory → **Play → Server Manager → Add Server**
+2. Enter `<server-ip>:7777`
+3. Claim the server — set an admin password on first connection
+4. Set a join password in Server Settings (what friends need to enter)
+5. Create a new session — enable Creative Mode and Flight here if you want them
 
 ---
 
