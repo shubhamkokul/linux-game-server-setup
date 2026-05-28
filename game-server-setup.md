@@ -215,6 +215,94 @@ Add at the bottom:
 
 Now `start-satisfactory` and `stop-satisfactory` work from anywhere.
 
+### Save file backups
+
+Satisfactory saves are at `/home/satisfactory/.config/Epic/FactoryGame/Saved/SaveGames/` on the server. Back them up to your local machine so a VPS disaster doesn't wipe your progress.
+
+**Step 1 — Give your admin user read access to the save files:**
+
+```bash
+sudo usermod -aG satisfactory <username>
+sudo chmod -R g+r /home/satisfactory/.config/Epic/
+sudo chmod g+x /home/satisfactory
+sudo chmod g+x /home/satisfactory/.config
+sudo chmod g+x /home/satisfactory/.config/Epic
+sudo chmod g+x /home/satisfactory/.config/Epic/FactoryGame
+sudo chmod g+x /home/satisfactory/.config/Epic/FactoryGame/Saved
+sudo chmod g+x /home/satisfactory/.config/Epic/FactoryGame/Saved/SaveGames
+```
+
+Verify it works:
+
+```bash
+sudo -u <username> ls /home/satisfactory/.config/Epic/FactoryGame/Saved/SaveGames/
+```
+
+**Step 2 — Create a backup script on your local machine:**
+
+```bash
+mkdir -p ~/backups/satisfactory
+vi ~/backup-satisfactory.sh
+```
+
+```bash
+#!/bin/bash
+
+BACKUP_DIR="$HOME/backups/satisfactory"
+REMOTE_USER="<username>"
+REMOTE_HOST="<server-ip>"
+REMOTE_PORT="<ssh-port>"
+REMOTE_SAVES="/home/satisfactory/.config/Epic/FactoryGame/Saved/SaveGames/"
+SSH_KEY="$HOME/.ssh/id_ed25519"
+TIMESTAMP=$(date +%Y-%m-%d_%H-%M)
+KEEP_BACKUPS=7
+
+mkdir -p "$BACKUP_DIR"
+
+echo "[$TIMESTAMP] Starting Satisfactory backup..."
+
+rsync -avz \
+  -e "ssh -p $REMOTE_PORT -i $SSH_KEY" \
+  "$REMOTE_USER@$REMOTE_HOST:$REMOTE_SAVES" \
+  "$BACKUP_DIR/$TIMESTAMP/"
+
+if [ $? -eq 0 ]; then
+  echo "[$TIMESTAMP] Backup successful → $BACKUP_DIR/$TIMESTAMP"
+else
+  echo "[$TIMESTAMP] Backup FAILED"
+  exit 1
+fi
+
+# Keep only last N backups
+BACKUP_COUNT=$(ls -dt "$BACKUP_DIR"/*/ 2>/dev/null | wc -l)
+if [ "$BACKUP_COUNT" -gt "$KEEP_BACKUPS" ]; then
+  ls -dt "$BACKUP_DIR"/*/ | tail -n +"$((KEEP_BACKUPS + 1))" | xargs rm -rf
+  echo "Pruned old backups, keeping last $KEEP_BACKUPS"
+fi
+```
+
+```bash
+chmod +x ~/backup-satisfactory.sh
+```
+
+**Step 3 — Install rsync on both machines:**
+
+```bash
+# On the VPS
+sudo apt install -y rsync
+
+# On local machine (Fedora)
+sudo dnf install -y rsync
+```
+
+Run it on demand before/after sessions:
+
+```bash
+~/backup-satisfactory.sh
+```
+
+> Saves are small (1-2MB). Backups take under a second. Run one before every session — it costs nothing.
+
 ### Connect from the game
 
 1. Open Satisfactory → **Play → Server Manager → Add Server**
